@@ -10,8 +10,28 @@ def draw_circle(event,x,y,flags,param): #https://stackoverflow.com/questions/283
         mouseX, mouseY = x, y
 
 
-def kmeans(slika, k=3, iteracije=10):
+def kmeans(slika, dimenzija, k=3, iteracije=10):
+    height, width = slika.shape[:2]
 
+    centres = izracunaj_centre(slika, 0, dimenzija, 100, k)
+    centreImage = np.zeros((height, width), np.uint8)
+    for i in range(width -1):
+        for j in range(height -1):
+            closest = 10000000
+            index = -1
+            for x in range(len(centres)):
+                if dimenzija == 3:
+                    temp = abs(int(slika[j, i][0]) - int(centres[x][0])) + abs(int(slika[j, i][1]) - int(centres[x][1])) + abs(int(slika[j, i][2]) - int(centres[x][2]))
+                    if closest > temp:
+                        index = x
+                        closest = temp
+                else:
+                    temp = abs(int(j) - int(centres[x][0])) + abs(int(i) - int(centres[x][1])) + abs(int(slika[j, i][0]) - int(centres[x][2])) + abs(int(slika[j, i][1]) - int(centres[x][3])) + abs(int(slika[j, i][2]) - int(centres[x][4]))
+                    if closest > temp:
+                        index = x
+                        closest = temp
+            centreImage[j][i] = index
+    print(centreImage)
     pass
 
 def meanshift(slika, velikost_okna, dimenzija):
