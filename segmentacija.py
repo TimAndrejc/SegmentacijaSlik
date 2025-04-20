@@ -1,7 +1,9 @@
 import cv2 as cv
 import random
+import numpy as np
 mouseX, mouseY = -1, -1
 clicked = False
+
 
 def draw_circle(event,x,y,flags,param): #https://stackoverflow.com/questions/28327020/opencv-detect-mouse-position-clicking-over-a-picture
     global mouseX, mouseY, clicked
@@ -38,11 +40,11 @@ def meanshift(slika, velikost_okna, dimenzija):
 
     pass
 
-def izracunaj_centre(slika, izbira, dimenzija_centra, T):
+def izracunaj_centre(slika, izbira, dimenzija_centra, T, k):
     height, width = slika.shape[:2]
     global mouseX, mouseY, clicked
     centeres = []
-    while len(centeres) < 3:
+    while len(centeres) < k:
         if izbira == 0:
             x = random.randint(0, height -1)
             y = random.randint(0, width-1)
@@ -82,14 +84,14 @@ def izracunaj_centre(slika, izbira, dimenzija_centra, T):
                         centeres.append([int(pixel[0]), int(pixel[1]), int(pixel[2])])
                     clicked = False
                     cv.circle(img, (mouseX, mouseY), 5, (255, 0, 0), -1)
-                if len(centeres) >= 3:
+                if len(centeres) >= k:
                     break
 
-    print(centeres)
+    return centeres
 
 if __name__ == "__main__":
     img = cv.imread('types-of-peppers-1.jpg')
-    izracunaj_centre(img, 1, 5, 100)
+    kmeans(img, 3)
 
     cv.destroyAllWindows()
     pass
