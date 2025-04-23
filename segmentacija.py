@@ -126,15 +126,72 @@ def izracunaj_centre(slika, izbira, dimenzija_centra, T, k):
                     break
 
     return centeres
+def K(d, h):
+    return np.exp(-1 * (d**2) / (2 * (h**2)))
 
-def meanshift(slika, velikost_okna, dimenzija):
+def meanshift(slika, h, dimenzija, min_cd = 80):
+    height, width = slika.shape[:2]
+    iteracija = 0
+    konvergenca = False
+    itSlika = slika.copy()
+
+    while not konvergenca and iteracija < 10:
+        konvergenca = True
+        novaSlika = np.zeros_like(slika)
+
+        for i in range(width):
+            for j in range(height):
+                if dimenzija == 3:
+                    razdalje = np.zeros((height, width), np.float32)
+                    uteži = np.zeros((height, width), np.float32)
+
+                    for x in range(width):
+                        for y in range(height):
+                            razdalje[y, x] = razdalja3d(itSlika[j, i], itSlika[y, x])
+                            uteži[y, x] = K(razdalje[y, x], h)
+
+                    nova_točka = np.sum(uteži[:, :, np.newaxis] * itSlika, axis=(0, 1)) / np.sum(uteži)
+
+                    if razdalja3d(itSlika[j, i], nova_točka) > 1:
+                        konvergenca = False
+
+                    novaSlika[j, i] = np.uint8(nova_točka)
+
+        itSlika = novaSlika.copy()
+        iteracija += 1
+    cv.imshow("seg", itSlika)
+    cv.waitKey(0)
+    centri = []
+    segIndex = np.zeros((height, width), dtype=np.int32)
+
+    for j in range(height):
+        for i in range(width):
+            tocka = itSlika[j, i]
+            added = False
+            for x in range(len(centri)):
+                if razdalja3d(tocka, centri[x]) < min_cd:
+                    segIndex[j, i] = x
+                    added = True
+                    break
+            if not added:
+                centri.append(tocka)
+                segIndex[j, i] = len(centri) - 1
 
 
+    segmentirana = np.zeros_like(itSlika)
+    for j in range(height):
+        for i in range(width):
+            segmentirana[j, i] = centri[segIndex[j, i]]
+
+    cv.imshow("Segmentacija", segmentirana)
+    cv.waitKey(0)
     pass
 
 if __name__ == "__main__":
     img = cv.resize(cv.imread("types-of-peppers-1.jpg"), (50,50))
     #kmeans(img, 5, 6)
-    meanshift(img, 3, 5)
+    meanshift(img, 20, 3)
+    #cv.imshow("img", img)
+    cv.waitKey(0)
     cv.destroyAllWindows()
     pass
