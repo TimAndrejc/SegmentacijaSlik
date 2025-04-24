@@ -72,7 +72,7 @@ def kmeans(slika, dimenzija, k=3, iteracije=10):
 def razdalja3d(t1, t2):
     return abs(int(t1[0]) - int(t2[0])) + abs(int(t1[1]) - int(t2[1])) + abs(int(t1[2]) - int(t2[2]))
 
-def razdalja5d(j,i,x,y, t1, t2):
+def razdalja5d(j,i,y,x, t1, t2):
     return (abs(int(t1[0]) - int(t2[0])) + abs(int(t1[1]) - int(t2[1])) + abs(int(t1[2])
             - int(t2[2]) + abs(j)- y) + abs(x - i))
 
@@ -129,7 +129,7 @@ def izracunaj_centre(slika, izbira, dimenzija_centra, T, k):
 def K(d, h):
     return np.exp(-1 * (d**2) / (2 * (h**2)))
 
-def meanshift(slika, h, dimenzija, min_cd = 80):
+def meanshift(slika, h, dimenzija, min_cd = 100):
     height, width = slika.shape[:2]
     iteracija = 0
     konvergenca = False
@@ -141,26 +141,26 @@ def meanshift(slika, h, dimenzija, min_cd = 80):
 
         for i in range(width):
             for j in range(height):
-                if dimenzija == 3:
-                    razdalje = np.zeros((height, width), np.float32)
-                    uteži = np.zeros((height, width), np.float32)
-
-                    for x in range(width):
-                        for y in range(height):
+                razdalje = np.zeros((height, width), np.float32)
+                uteži = np.zeros((height, width), np.float32)
+                for x in range(width):
+                    for y in range(height):
+                        if dimenzija == 3:
                             razdalje[y, x] = razdalja3d(itSlika[j, i], itSlika[y, x])
-                            uteži[y, x] = K(razdalje[y, x], h)
+                        else:
+                            razdalje[y, x] = razdalja5d(j,i, y,x,itSlika[j, i], itSlika[y, x])
+                        uteži[y, x] = K(razdalje[y, x], h)
 
-                    nova_točka = np.sum(uteži[:, :, np.newaxis] * itSlika, axis=(0, 1)) / np.sum(uteži)
+                nova_točka = np.sum(uteži[:, :, np.newaxis] * itSlika, axis=(0, 1)) / np.sum(uteži)
 
-                    if razdalja3d(itSlika[j, i], nova_točka) > 1:
-                        konvergenca = False
+                if razdalja3d(itSlika[j, i], nova_točka) > 1:
+                    konvergenca = False
 
-                    novaSlika[j, i] = np.uint8(nova_točka)
+                novaSlika[j, i] = np.uint8(nova_točka)
 
         itSlika = novaSlika.copy()
         iteracija += 1
-    cv.imshow("seg", itSlika)
-    cv.waitKey(0)
+
     centri = []
     segIndex = np.zeros((height, width), dtype=np.int32)
 
@@ -189,8 +189,8 @@ def meanshift(slika, h, dimenzija, min_cd = 80):
 
 if __name__ == "__main__":
     img = cv.resize(cv.imread("types-of-peppers-1.jpg"), (50,50))
-    #kmeans(img, 5, 6)
-    meanshift(img, 20, 3)
+    #kmeans(img, 3, 6)
+    meanshift(img, 30, 5)
     #cv.imshow("img", img)
     cv.waitKey(0)
     cv.destroyAllWindows()
