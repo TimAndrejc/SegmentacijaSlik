@@ -190,7 +190,7 @@ def meanshift(slika, h, dimenzija, min_cd = 100):
 if __name__ == "__main__":
     img = cv.resize(cv.imread("types-of-peppers-1.jpg"), (50,50))
     #kmeans(img, 3, 6)
-    meanshift(img, 30, 5)
+    #meanshift(img, 30, 5)
     #cv.imshow("img", img)
     cv.waitKey(0)
     cv.destroyAllWindows()
